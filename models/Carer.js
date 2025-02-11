@@ -24,6 +24,46 @@ const Carer = sequelize.define("Carer", {
     type: DataTypes.STRING,
     unique: true,
   },
+  careAssitantCert: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  socialWorkerCert: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  nursingAssistantCert: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  profileImage: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  hasVehicle: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+  },
+  hasDementiaTraining: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+  },
+  address: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  workingArea: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  workingHours: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  expectedSalary: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
 });
 
 module.exports = Carer;
