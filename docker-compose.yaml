@@ -6,3 +6,13 @@ services:
       MYSQL_ROOT_PASSWORD: admin
       MYSQL_DATABASE: test
     network_mode: "host"
+  backend:
+    image: node:latest
+    container_name: backend
+    working_dir: /app
+    volumes:
+      - .:/app
+    network_mode: "host"
+    command: tail -f
+    depends_on:
+      - db
