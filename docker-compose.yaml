@@ -1,11 +1,11 @@
 services:
-  db:
-    image: mysql:8.0
-    container_name: mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: admin
-      MYSQL_DATABASE: test
+  mongodb:
+    image: mongo
+    container_name: mongodb
     network_mode: "host"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=admin
   backend:
     image: node:latest
     container_name: backend
@@ -15,4 +15,4 @@ services:
     network_mode: "host"
     command: tail -f
     depends_on:
-      - db
+      - mongodb

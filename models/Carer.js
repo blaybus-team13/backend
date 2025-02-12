@@ -1,69 +1,54 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+const mongoose = require("mongoose");
 
-const Carer = sequelize.define("Carer", {
-  id: {
-    type: DataTypes.INTEGER,
-    unique: true,
-    autoIncrement: true,
-  },
-  userid: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  tel: {
-    type: DataTypes.STRING,
-    unique: true,
-  },
+const carerSchema = new mongoose.Schema({
+  userid: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  name: { type: String, required: true },
+  tel: { type: String, required: true, unique: true },
   careAssitantCert: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: {
+      certNumber: { type: String, required: true },
+      certImage: { type: String, required: true },
+      isCertified: { type: Boolean, required: true },
+    },
+    required: true,
   },
   socialWorkerCert: {
-    type: DataTypes.STRING,
-    allowNull: true,
+    type: {
+      certNumber: { type: String, required: true },
+      certImage: { type: String, required: true },
+      isCertified: { type: Boolean, required: true },
+    },
+    required: false,
   },
   nursingAssistantCert: {
-    type: DataTypes.STRING,
-    allowNull: true,
+    type: {
+      certNumber: { type: String, required: true },
+      certImage: { type: String, required: true },
+      isCertified: { type: Boolean, required: true },
+    },
+    required: false,
   },
-  profileImage: {
-    type: DataTypes.STRING,
-    allowNull: true,
+  profileImage: { type: String, required: false },
+  hasVehicle: { type: Boolean, required: true },
+  hasDementiaTraining: { type: Boolean, required: true },
+  address: { type: String, required: true },
+  workingArea: { type: String, required: true },
+  jobCondition: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "JobCondition",
+    default: null,
   },
-  hasVehicle: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-  },
-  hasDementiaTraining: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-  },
-  address: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  workingArea: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  workingHours: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  expectedSalary: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
+  images: { type: [String], required: false },
+  workExperiences: {
+    type: [
+      {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "WorkExperience",
+      },
+    ],
+    default: [],
   },
 });
 
-module.exports = Carer;
+module.exports = mongoose.model("Carer", carerSchema);

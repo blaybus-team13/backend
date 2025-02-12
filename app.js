@@ -4,9 +4,16 @@ const swaggerJsdoc = require("swagger-jsdoc");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+const mongoose = require("mongoose");
 const cors = require("cors");
 
-const sequelize = require("./config/database");
+const { createAuthRouter } = require("./routers");
+
+mongoose
+  .connect("mongodb://root:admin@localhost:27017/test?authSource=admin")
+  .then(() => {
+    console.log("MongoDB connected");
+  });
 
 const app = express();
 
@@ -16,11 +23,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
-
-sequelize
-  .sync()
-  .then(() => console.log("Database connected"))
-  .catch((err) => console.error("Error:", err));
 
 // Swagger 설정
 const swaggerOptions = {
@@ -38,30 +40,14 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ["./app.js", "./routes/*.js"], // API 라우트 파일 경로
+  apis: ["./app.js", "./routers/*.js"], // API 라우트 파일 경로
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-/**
- * @swagger
- * /api/users:
- *   post:
- *     summary: 새 사용자 추가
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *     responses:
- *       201:
- *         description: 생성됨
- */
+app.use("/auth", createAuthRouter());
+
 app.get("/", (req, res) => {
   res.send("hello world");
 });

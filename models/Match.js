@@ -1,30 +1,20 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+const mongoose = require("mongoose");
 
-const Match = sequelize.define("Match", {
+const matchSchema = new mongoose.Schema({
   carerId: {
-    type: DataTypes.INTEGER,
-    references: { model: Carer, key: "id" },
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Carer",
+    required: true,
   },
   seniorId: {
-    type: DataTypes.INTEGER,
-    references: { model: Senior, key: "id" },
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Senior",
+    required: true,
   },
-  requestedBy: {
-    type: DataTypes.ENUM("CARER", "SENIOR"),
-    allowNull: false,
-  },
-  status: {
-    type: DataTypes.ENUM("PENDING", "ACCEPTED", "REJECTED", "CANCELED"),
-    defaultValue: "PENDING",
-  },
-  requestedAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
-  respondedAt: {
-    type: DataTypes.DATE,
-  },
+  requestedBy: { type: String, required: true },
+  status: { type: String, required: true },
+  requestedAt: { type: Date, required: true },
+  respondedAt: { type: Date, required: false },
 });
 
-module.exports = Match;
+module.exports = mongoose.model("Match", matchSchema);
