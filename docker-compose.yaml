@@ -2,7 +2,7 @@ services:
   mongodb:
     image: mongo
     container_name: mongodb
-    #network_mode: "host"
+    # network_mode: "host"
     ports:
       - "27017:27017"
     environment:
