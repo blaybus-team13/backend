@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const { createAuthRouter } = require("./routers");
+const seniorRoutes = require("./routers/seniorRoutes");
 
 mongoose
   .connect("mongodb://root:admin@localhost:27018/test?authSource=admin")
@@ -47,6 +48,7 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/auth", createAuthRouter());
+app.use("/", seniorRoutes);
 
 // centerAdmin 라우터 추가 (여기)
 const carerRoutes = require("./routers/CarerRoutes");
