@@ -8,7 +8,6 @@ const seniorSchema = new mongoose.Schema({
   services: { type: [String], required: true },
   workingDays: { type: [String], required: true },
   workingHours: { type: [Number], required: true },
-  address: { type: String, required: true },
   minSalary: { type: Number, required: true },
 });
 
