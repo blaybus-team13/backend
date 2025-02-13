@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const { createAuthRouter } = require("./routers");
+const seniorRoutes = require("./routers/seniorRoutes");
 
 mongoose
   .connect("mongodb://root:admin@localhost:27017/test?authSource=admin")
@@ -47,6 +48,7 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/auth", createAuthRouter());
+app.use("/", seniorRoutes);
 
 app.get("/", (req, res) => {
   res.send("hello world");
