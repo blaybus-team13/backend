@@ -1,10 +1,6 @@
-console.log("Center Admin Routes Loaded");
-
 const express = require("express");
-const CenterAdmin = require("../models/Carer");
 const router = express.Router();
 const multer = require("multer");
-const path = require("path");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
