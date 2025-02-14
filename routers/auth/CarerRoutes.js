@@ -31,7 +31,7 @@ const uploadFields = [
 
 /**
  * @swagger
- * /api/carer/register:
+ * /auth/carer/register:
  *   post:
  *     summary: 새로운 요양보호사 등록
  */
@@ -128,7 +128,7 @@ router.post("/register", upload.fields(uploadFields), async (req, res) => {
 
 /**
  * @swagger
- * /api/carer/update/{id}:
+ * /auth/carer/update/{id}:
  *   put:
  *     summary: 요양보호사 정보 수정
  */
@@ -196,7 +196,7 @@ router.put("/update/:id", upload.fields(uploadFields), async (req, res) => {
 
 /**
  * @swagger
- * /api/carer/list:
+ * /auth/carer/list:
  *   get:
  *     summary: 전체 요양보호사 목록 조회
  */
@@ -215,7 +215,7 @@ router.get("/list", async (req, res) => {
 
 /**
  * @swagger
- * /api/carer/{id}:
+ * /auth/carer/{id}:
  *   get:
  *     summary: 특정 요양보호사 상세 정보 조회
  */
@@ -242,7 +242,7 @@ router.get("/:id", async (req, res) => {
 
 /**
  * @swagger
- * /api/carer/{id}:
+ * /auth/carer/{id}:
  *   delete:
  *     summary: 요양보호사 정보 삭제
  */
@@ -266,7 +266,7 @@ router.delete("/:id", async (req, res) => {
 
 /**
  * @swagger
- * /api/carer/update-job-condition/{id}:
+ * /auth/carer/update-job-condition/{id}:
  *   patch:
  *     summary: 요양보호사 구직 조건 업데이트
  */

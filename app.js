@@ -40,7 +40,7 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ["./app.js", "./routers/*.js"], // API 라우트 파일 경로
+  apis: ["./app.js", "./routers/**/*.js"], // API 라우트 파일 경로
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
