@@ -4,67 +4,104 @@ const Senior = require("../../models/Senior");
 
 const mongoose = require("mongoose");
 
-// create
 /**
  * @swagger
  * /auth/senior:
  *   post:
  *     summary: 새로운 Senior 생성
+ *     tags: [Senior]
+ *     parameters:
+ *       - in: header
+ *         name: Content-Type
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: application/json
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - tel
+ *               - address
+ *               - services
+ *               - workingDays
+ *               - workingHours
+ *               - minSalary
+ *               - info
  *             properties:
  *               name:
  *                 type: string
- *                 description: Senior의 이름
+ *                 description: 이름
+ *                 example: "신짱구"
  *               tel:
  *                 type: string
- *                 description: Senior의 전화번호
+ *                 description: 전화번호
  *               address:
  *                 type: string
- *                 description: Senior의 주소
+ *                 description: 주소
  *               profileImage:
  *                 type: string
- *                 description: 프로필 이미지 경로
+ *                 description: 프로필 이미지
  *               services:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: 어르신 필요 서비스
+ *                 description: 필요 서비스
  *               workingDays:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: 원하는 근무 요일
+ *                 description: 희망 근무 요일
  *               workingHours:
  *                 type: array
  *                 items:
  *                   type: number
- *                 description: 근무 시간간
+ *                 description: 근무 시간
  *               minSalary:
  *                 type: number
- *                 description: 최소 시급
+ *                 description: 시급
  *               info:
  *                 type: object
- *                 description: 성별, 몸무게, 동거인 여부
+ *                 required:
+ *                   - gender
+ *                   - weight
+ *                   - hasCohabitant
  *                 properties:
  *                   gender:
  *                     type: string
  *                     description: 성별
  *                   weight:
  *                     type: number
- *                     description: 몸무게 (kg)
+ *                     description: 몸무게
  *                   hasCohabitant:
  *                     type: boolean
- *                     description: 동거인이 있는지 여부 (true/false)
+ *                     description: 동거인 여부
+ *                     example: true
  *     responses:
  *       201:
- *         description: 생성됨
+ *         description: Senior 생성 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "senior 정보 생성 성공"
+ *                 data:
+ *                   $ref: '#/components/schemas/Senior'
  *       500:
- *         description: 필수 정보가 누락되었거나 잘못된 요청
+ *         description: 필수 정보 미입력 또는 서버 오류
  */
 router.post("/", async (req, res) => {
   const {
@@ -82,7 +119,7 @@ router.post("/", async (req, res) => {
     !name ||
     !tel ||
     !address ||
-    !profileImage || // 필수 정보로 들어가지 않을 시 수정 예정
+    !profileImage ||
     !services ||
     !workingDays ||
     !workingHours ||
@@ -96,55 +133,32 @@ router.post("/", async (req, res) => {
   res.status(201).json({ message: "senior 정보 생성 성공", data: savedSenior });
 });
 
-// read
-/**
- * @swagger
- * /auth/senior/{id}:
- *   get:
- *     summary: 특정 Senior 상세 정보 조회
- *     description: Senior의 ID를 사용하여 정보를 조회
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: 조회할 Senior의 고유 ID
- *         schema:
- *           type: string
- *     responses:
- *       201:
- *         description: Senior 정보를 조회됨
- *       500:
- *         description: 서버 오류 또는 Senior를 찾을 수 없음
- */
-router.get("/:id", async (req, res) => {
-  const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(500).json({ message: "유효하지 않은 ID" });
-  }
-  // if (!id) {
-  //   return res.status(500).json({ message: "senior id 미제공" });
-  // }
-  const senior = await Senior.findById(id);
-  if (!senior) {
-    return res.status(500).json({ message: "해당 senior를 찾을 수 없음" });
-  }
-  res.status(201).json({ message: "senior 정보 조회 성공", data: senior });
-});
-
-// update
 /**
  * @swagger
  * /auth/senior/{id}:
  *   patch:
  *     summary: 특정 Senior 정보 수정
- *     description: Senior의 ID를 사용하여 모든 정보를 수정함
+ *     tags: [Senior]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: 수정할 Senior의 고유 ID
  *         schema:
  *           type: string
+ *           format: uuid
+ *         description: 수정할 Senior ID
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token
+ *       - in: header
+ *         name: Content-Type
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: application/json
  *     requestBody:
  *       required: true
  *       content:
@@ -154,53 +168,157 @@ router.get("/:id", async (req, res) => {
  *             properties:
  *               name:
  *                 type: string
- *                 description: Senior의 이름
+ *                 example: "신짱구"
  *               tel:
  *                 type: string
- *                 description: Senior의 전화번호
  *               address:
  *                 type: string
- *                 description: Senior의 주소
  *               profileImage:
  *                 type: string
- *                 description: 프로필 이미지 경로
  *               services:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: 어르신 필요 서비스
  *               workingDays:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: 원하는 근무 요일
  *               workingHours:
  *                 type: array
  *                 items:
  *                   type: number
- *                 description: 근무 시간간
  *               minSalary:
  *                 type: number
- *                 description: 최소 시급
  *               info:
  *                 type: object
- *                 description: 성별, 몸무게, 동거인 여부
  *                 properties:
  *                   gender:
  *                     type: string
- *                     description: 성별
  *                   weight:
  *                     type: number
- *                     description: 몸무게 (kg)
  *                   hasCohabitant:
  *                     type: boolean
- *                     description: 동거인이 있는지 여부 (true/false)
+ *                     example: true
  *     responses:
- *       201:
+ *       200:
  *         description: Senior 정보 수정 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "senior 정보 수정 성공"
+ *                 data:
+ *                   $ref: '#/components/schemas/Senior'
+ *                 updatedFields:
+ *                   type: array
+ *                   items:
+ *                     type: string
  *       500:
- *         description: 서버 오류 또는 잘못된 요청
+ *         description: 수정 실패
  */
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(500).json({ message: "유효하지 않은 ID" });
+  }
+  const senior = await Senior.findById(id);
+  if (!senior) {
+    return res.status(500).json({ message: "해당 senior를 찾을 수 없습니다" });
+  }
+  res.status(201).json({ message: "senior 정보 조회 성공", data: senior });
+});
+
+/**
+ * @swagger
+ * /auth/senior/{id}:
+ *   patch:
+ *     summary: 특정 Senior 정보 수정
+ *     tags: [Senior]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: 수정할 Senior ID
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token
+ *       - in: header
+ *         name: Content-Type
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: application/json
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "홍길동"
+ *               tel:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               profileImage:
+ *                 type: string
+ *               services:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               workingDays:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               workingHours:
+ *                 type: array
+ *                 items:
+ *                   type: number
+ *               minSalary:
+ *                 type: number
+ *                 example: 12000
+ *               info:
+ *                 type: object
+ *                 properties:
+ *                   gender:
+ *                     type: string
+ *                   weight:
+ *                     type: number
+ *                   hasCohabitant:
+ *                     type: boolean
+ *                     example: true
+ *     responses:
+ *       200:
+ *         description: Senior 정보 수정 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "senior 정보 수정 성공"
+ *                 data:
+ *                   $ref: '#/components/schemas/Senior'
+ *                 updatedFields:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: 수정 실패
+ */
+
 router.patch("/:id", async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {

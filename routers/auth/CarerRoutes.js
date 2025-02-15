@@ -34,6 +34,91 @@ const uploadFields = [
  * /auth/carer/register:
  *   post:
  *     summary: 새로운 요양보호사 등록
+ *     tags: [Carer]
+ *     parameters:
+ *       - in: header
+ *         name: Content-Type
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: multipart/form-data
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userid
+ *               - password
+ *               - name
+ *               - tel
+ *               - careAssitantCertNumber
+ *               - careAssitantCertImage
+ *               - hasVehicle
+ *               - hasDementiaTraining
+ *               - address
+ *               - workingArea
+ *             properties:
+ *               userid:
+ *                 type: string
+ *                 description: 사용자 아이디
+ *               password:
+ *                 type: string
+ *                 description: 비밀번호
+ *                 format: password
+ *               name:
+ *                 type: string
+ *                 description: 이름
+ *               tel:
+ *                 type: string
+ *                 description: 전화번호
+ *               careAssitantCertNumber:
+ *                 type: string
+ *                 description: 요양보호사 자격증 번호 (필수)
+ *               careAssitantCertImage:
+ *                 type: file
+ *                 description: 요양보호사 자격증 이미지 (필수)
+ *               socialWorkerCertNumber:
+ *                 type: string
+ *                 description: 사회복지사 자격증 번호
+ *               socialWorkerCertImage:
+ *                 type: file
+ *                 description: 사회복지사 자격증 이미지
+ *               nursingAssistantCertNumber:
+ *                 type: string
+ *                 description: 간호조무사 자격증 번호
+ *               nursingAssistantCertImage:
+ *                 type: file
+ *                 description: 간호조무사 자격증 이미지
+ *               hasVehicle:
+ *                 type: string
+ *                 enum: ['true', 'false']
+ *                 description: 자차 보유 여부
+ *               hasDementiaTraining:
+ *                 type: string
+ *                 enum: ['true', 'false']
+ *                 description: 치매 교육 이수 여부
+ *               address:
+ *                 type: string
+ *                 description: 주소
+ *               workingArea:
+ *                 type: string
+ *                 description: 근무 희망 지역
+ *               profileImage:
+ *                 type: file
+ *                 description: 프로필 이미지
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: file
+ *                 description: 추가 이미지 (최대 5개)
  */
 
 router.post("/register", upload.fields(uploadFields), async (req, res) => {
@@ -131,6 +216,70 @@ router.post("/register", upload.fields(uploadFields), async (req, res) => {
  * /auth/carer/update/{id}:
  *   put:
  *     summary: 요양보호사 정보 수정
+ *     tags: [Carer]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 요양보호사 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: 이름
+ *               tel:
+ *                 type: string
+ *                 description: 전화번호
+ *               careAssitantCertNumber:
+ *                 type: string
+ *                 description: 요양보호사 자격증 번호
+ *               careAssitantCertImage:
+ *                 type: file
+ *                 description: 요양보호사 자격증 이미지
+ *               hasSocialWorkerCert:
+ *                 type: string
+ *                 enum: ['true', 'false']
+ *               socialWorkerCertNumber:
+ *                 type: string
+ *               socialWorkerCertImage:
+ *                 type: file
+ *               hasNursingAssistantCert:
+ *                 type: string
+ *                 enum: ['true', 'false']
+ *               nursingAssistantCertNumber:
+ *                 type: string
+ *               nursingAssistantCertImage:
+ *                 type: file
+ *               hasVehicle:
+ *                 type: string
+ *                 enum: ['true', 'false']
+ *               hasDementiaTraining:
+ *                 type: string
+ *                 enum: ['true', 'false']
+ *               address:
+ *                 type: string
+ *               workingArea:
+ *                 type: string
+ *               profileImage:
+ *                 type: file
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: file
+ *     responses:
+ *       200:
+ *         description: 정보 수정 성공
+ *       404:
+ *         description: 요양보호사를 찾을 수 없음
+ *       500:
+ *         description: 서버 오류
  */
 
 router.put("/update/:id", upload.fields(uploadFields), async (req, res) => {
@@ -199,6 +348,19 @@ router.put("/update/:id", upload.fields(uploadFields), async (req, res) => {
  * /auth/carer/list:
  *   get:
  *     summary: 전체 요양보호사 목록 조회
+ *     tags: [Carer]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token
+ *     responses:
+ *       200:
+ *         description: 요양보호사 목록 조회 성공
+ *       500:
+ *         description: 서버 오류
  */
 router.get("/list", async (req, res) => {
   try {
@@ -218,6 +380,27 @@ router.get("/list", async (req, res) => {
  * /auth/carer/{id}:
  *   get:
  *     summary: 특정 요양보호사 상세 정보 조회
+ *     tags: [Carer]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 요양보호사 ID
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token
+ *     responses:
+ *       200:
+ *         description: 요양보호사 정보 조회 성공
+ *       404:
+ *         description: 요양보호사를 찾을 수 없음
+ *       500:
+ *         description: 서버 오류
  */
 
 router.get("/:id", async (req, res) => {
@@ -245,6 +428,29 @@ router.get("/:id", async (req, res) => {
  * /auth/carer/{id}:
  *   delete:
  *     summary: 요양보호사 정보 삭제
+ *     tags: [Carer]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 삭제할 요양보호사 ID
+ *     responses:
+ *       200:
+ *         description: 삭제 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "보호사 정보가 삭제되었습니다."
+ *       404:
+ *         description: 해당 보호사를 찾을 수 없음
+ *       500:
+ *         description: 서버 오류
  */
 
 router.delete("/:id", async (req, res) => {
@@ -269,6 +475,45 @@ router.delete("/:id", async (req, res) => {
  * /auth/carer/update-job-condition/{id}:
  *   patch:
  *     summary: 요양보호사 구직 조건 업데이트
+ *     tags: [Carer]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 요양보호사 ID
+ *       - in: header
+ *         name: Content-Type
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: application/json
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - jobCondition
+ *             properties:
+ *               jobCondition:
+ *                 type: string
+ *                 description: 구직 조건 ID
+ *     responses:
+ *       200:
+ *         description: 구직 조건 업데이트 성공
+ *       404:
+ *         description: 해당 보호사를 찾을 수 없음
+ *       500:
+ *         description: 서버 오류
  */
 
 router.patch("/update-job-condition/:id", async (req, res) => {
