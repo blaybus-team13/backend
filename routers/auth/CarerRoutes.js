@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
+const Carer = require("../models/Carer");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -63,8 +64,12 @@ const uploadFields = [
  *               - careAssitantCertImage
  *               - hasVehicle
  *               - hasDementiaTraining
- *               - address
- *               - workingArea
+ *               - addressCity
+ *               - addressSubCity
+ *               - addressSubSubCity
+ *               - workingAreaCity
+ *               - workingAreaSubCity
+ *               - workingAreaSubSubCity
  *             properties:
  *               userid:
  *                 type: string
@@ -105,12 +110,24 @@ const uploadFields = [
  *                 type: string
  *                 enum: ['true', 'false']
  *                 description: 치매 교육 이수 여부
- *               address:
+ *               addressCity:
  *                 type: string
- *                 description: 주소
- *               workingArea:
+ *                 description: 거주지 시 (예: 서울시)
+ *               addressSubCity:
  *                 type: string
- *                 description: 근무 희망 지역
+ *                 description: 거주지 구 (예: 강남구)
+ *               addressSubSubCity:
+ *                 type: string
+ *                 description: 거주지 동 (예: 역삼동)
+ *               workingAreaCity:
+ *                 type: string
+ *                 description: 희망 근무지 시 (예: 서울시)
+ *               workingAreaSubCity:
+ *                 type: string
+ *                 description: 희망 근무지 구 (예: 강남구)
+ *               workingAreaSubSubCity:
+ *                 type: string
+ *                 description: 희망 근무지 동 (예: 역삼동)
  *               profileImage:
  *                 type: file
  *                 description: 프로필 이미지
@@ -133,8 +150,14 @@ router.post("/register", upload.fields(uploadFields), async (req, res) => {
       nursingAssistantCertNumber,
       hasVehicle,
       hasDementiaTraining,
-      address,
-      workingArea,
+      hasSocialWorkerCert,
+      hasNursingAssistantCert,
+      addressCity,
+      addressSubCity,
+      addressSubSubCity,
+      workingAreaCity,
+      workingAreaSubCity,
+      workingAreaSubSubCity,
     } = req.body;
 
     // 요양보호사 자격증 필수 체크
@@ -156,8 +179,18 @@ router.post("/register", upload.fields(uploadFields), async (req, res) => {
       },
       hasVehicle: hasVehicle === "true",
       hasDementiaTraining: hasDementiaTraining === "true",
-      address,
-      workingArea,
+      address: {
+        city: addressCity,
+        subCity: addressSubCity,
+        subSubCity: addressSubSubCity,
+      },
+      workingArea: [
+        {
+          city: workingAreaCity,
+          subCity: workingAreaSubCity,
+          subSubCity: workingAreaSubSubCity,
+        },
+      ],
     };
 
     // 사회복지사 자격증 정보 추가 (토글이 true인 경우에만)
@@ -263,9 +296,17 @@ router.post("/register", upload.fields(uploadFields), async (req, res) => {
  *               hasDementiaTraining:
  *                 type: string
  *                 enum: ['true', 'false']
- *               address:
+ *               addressCity:
  *                 type: string
- *               workingArea:
+ *               addressSubCity:
+ *                 type: string
+ *               addressSubSubCity:
+ *                 type: string
+ *               workingAreaCity:
+ *                 type: string
+ *               workingAreaSubCity:
+ *                 type: string
+ *               workingAreaSubSubCity:
  *                 type: string
  *               profileImage:
  *                 type: file
@@ -286,6 +327,32 @@ router.put("/update/:id", upload.fields(uploadFields), async (req, res) => {
   try {
     const carerId = req.params.id;
     const updateData = { ...req.body };
+
+    if (
+      updateData.addressCity &&
+      updateData.addressSubCity &&
+      updateData.addressSubSubCity
+    ) {
+      updateData.address = {
+        city: updateData.addressCity,
+        subCity: updateData.addressSubCity,
+        subSubCity: updateData.addressSubSubCity,
+      };
+    }
+
+    if (
+      updateData.workingAreaCity &&
+      updateData.workingAreaSubCity &&
+      updateData.workingAreaSubSubCity
+    ) {
+      updateData.workingArea = [
+        {
+          city: updateData.workingAreaCity,
+          subCity: updateData.workingAreaSubCity,
+          subSubCity: updateData.workingAreaSubSubCity,
+        },
+      ];
+    }
 
     if (req.files) {
       if (req.files.careAssitantCertImage) {

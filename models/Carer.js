@@ -1,5 +1,11 @@
 const mongoose = require("mongoose");
 
+const addressSchema = new mongoose.Schema({
+  city: { type: String, required: true }, //시
+  subCity: { type: String, required: true }, //구
+  subSubCity: { type: String, required: true }, //동
+});
+
 const carerSchema = new mongoose.Schema({
   userid: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -32,8 +38,15 @@ const carerSchema = new mongoose.Schema({
   profileImage: { type: String, required: false },
   hasVehicle: { type: Boolean, required: true },
   hasDementiaTraining: { type: Boolean, required: true },
-  address: { type: String, required: true },
-  workingArea: { type: String, required: true },
+  address: {
+    type: addressSchema,
+    required: true,
+  },
+
+  workingArea: {
+    type: [addressSchema],
+    required: true,
+  },
   jobCondition: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "JobCondition",
@@ -49,6 +62,17 @@ const carerSchema = new mongoose.Schema({
     ],
     default: [],
   },
+});
+
+carerSchema.index({
+  "address.city": 1,
+  "address.subCity": 1,
+  "address.subSubCity": 1,
+});
+carerSchema.index({
+  "workingArea.city": 1,
+  "workingArea.subCity": 1,
+  "workingArea.subSubCity": 1,
 });
 
 module.exports = mongoose.model("Carer", carerSchema);
