@@ -13,6 +13,16 @@ const seniorSchema = new mongoose.Schema({
   careInfo: {
     weight: { type: Number, required: true },
     hasCohabitant: { type: Boolean, required: true },
+    familyInfo: {
+      type: {
+        status: { type: String },
+        memberCount: { type: Number },
+      },
+      required: function () {
+        return this.hasCohabitant;
+      },
+    },
+    careGrade: { type: String, required: true },
   },
   schedule: {
     workingSchedule: [
