@@ -10,6 +10,8 @@ const cors = require("cors");
 const { createAuthRouter } = require("./routers");
 const seniorRoutes = require("./routers/seniorRoutes");
 
+const saveCenterData = require("./scripts/CenterData");
+
 mongoose
   .connect("mongodb://root:admin@localhost:27018/test?authSource=admin")
   .then(() => {
@@ -56,6 +58,15 @@ app.use("/api/carer", carerRoutes);
 
 app.get("/", (req, res) => {
   res.send("hello world");
+});
+
+app.get("/update-centers", (req, res) => {
+  saveCenterData()
+    .then(() => res.send("성공적으로 업데이트 되었음"))
+    .catch((error) => {
+      console.error("에러: ", error);
+      res.status(500).send("업데이트 에러");
+    });
 });
 
 app.use((req, res, next) => {
