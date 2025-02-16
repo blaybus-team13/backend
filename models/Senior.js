@@ -8,7 +8,7 @@ const seniorSchema = new mongoose.Schema({
     age: { type: Number },
     gender: { type: String, enum: ["남", "여"], required: true },
     address: { type: [String], required: true },
-    tel: { type: String, required: true, unique: true },
+    tel: { type: String, required: true },
   },
   careInfo: {
     weight: { type: Number, required: true },
@@ -94,13 +94,6 @@ const seniorSchema = new mongoose.Schema({
     managerTel: { type: String, required: true },
     managerEmail: { type: String, required: true },
   },
-});
-
-seniorSchema.pre("save", function (next) {
-  const currentYear = new Date().getFullYear();
-  const birthYear = this.basicInfo.birthDate.getFullYear();
-  this.age = currentYear - birthYear + 1;
-  next();
 });
 
 module.exports = mongoose.model("Senior", seniorSchema);
