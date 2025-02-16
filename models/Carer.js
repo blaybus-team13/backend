@@ -30,6 +30,17 @@ const MainCareerSchema = new mongoose.Schema({
   },
 });
 
+// 근무 조건
+const workScheduleSchema = new mongoose.Schema({
+  dayOfWeek: {
+    type: String,
+    required: true,
+    enum: ["월", "화", "수", "목", "금", "토", "일"],
+  },
+  startTime: { type: String, required: true },
+  endTime: { type: String, required: true },
+});
+
 const carerSchema = new mongoose.Schema({
   userid: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -76,6 +87,12 @@ const carerSchema = new mongoose.Schema({
     ref: "JobCondition",
     default: null,
   },
+  workConditions: {
+    preferredWorkTime: [workScheduleSchema],
+    desiredSalary: { type: Number, min: 15000 },
+    availableStartDate: { type: Date },
+  },
+
   images: { type: [String], required: false },
   workExperiences: {
     type: [
@@ -97,6 +114,11 @@ carerSchema.index({
   "workingArea.city": 1,
   "workingArea.subCity": 1,
   "workingArea.subSubCity": 1,
+});
+
+carerSchema.pre("save", function (next) {
+  this.updatedAt = Date.now();
+  next();
 });
 
 module.exports = mongoose.model("Carer", carerSchema);

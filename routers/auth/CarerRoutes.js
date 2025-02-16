@@ -736,4 +736,166 @@ router.patch("/update-job-condition/:id", async (req, res) => {
   }
 });
 
+// 근무 조건 업데이트 - 요양보호사 메인페이지에서!
+router.patch("/update-work-conditions/:id", async (req, res) => {
+  try {
+    const { preferredWorkTime, desiredSalary, availableStartDate, workType } =
+      req.body;
+
+    // 근무 시간
+    if (preferredWorkTime) {
+      preferredWorkTime.forEach((schedule) => {
+        if (!schedule.dayOfWeek || !schedule.startTime || !schedule.endTime) {
+          throw new Error("근무 시간 정보를 입력해주세요.");
+        }
+      });
+    }
+    if (desiredSalary && desiredSalary < 0) {
+      throw new Error("희망 시급은 0원 이상이어야 합니다.");
+    }
+
+    const updatedCarer = await Carer.findByIdAndUpdate(
+      req.params.id,
+      {
+        workConditions: {
+          preferredWorkTime,
+          desiredSalary,
+          availableStartDate: new Date(availableStartDate),
+          workType,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedCarer) {
+      return res.status(404).json({
+        message: "해당 요양보호사를 찾을 수 없습니다.",
+      });
+    }
+
+    res.json({
+      carer: updatedCarer,
+      message: "근무 조건이 업데이트되었습니다.",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({
+      message: err.message || "근무 조건 업데이트 중 오류가 발생했습니다.",
+    });
+  }
+});
+
+// 자격중 정보 업데이트
+router.patch(
+  "/update-certifications/:id",
+  upload.fields(uploadFields),
+  async (req, res) => {
+    try {
+      const {
+        hasSocialWorkerCert,
+        hasNursingAssistantCert,
+        socialWorkerCertNumber,
+        nursingAssistantCertNumber,
+      } = req.body;
+
+      const updateData = {
+        certifications: {
+          hasSocialWorkerCert: hasSocialWorkerCert === "true",
+          hasNursingAssistantCert: hasNursingAssistantCert === "true",
+        },
+      };
+
+      if (hasSocialWorkerCert === "true") {
+        if (!socialWorkerCertNumber || !req.files?.socialWorkerCertImage) {
+          throw new Error(
+            "사회복지사 자격증 번호와 이미지를 모두 입력해주세요."
+          );
+        }
+        updateData.socialWorkerCert = {
+          certNumber: socialWorkerCertNumber,
+          certImage: req.files.socialWorkerCertImage[0].path,
+          isCertified: false,
+        };
+      }
+      if (hasNursingAssistantCert === "true") {
+        if (
+          !nursingAssistantCertNumber ||
+          !req.files?.nursingAssistantCertImage
+        ) {
+          throw new Error(
+            "간호조무사 자격증 번호와 이미지를 모두 입력해주세요."
+          );
+        }
+        updateData.nursingAssistantCert = {
+          certNumber: nursingAssistantCertNumber,
+          certImage: req.files.nursingAssistantCertImage[0].path,
+          isCertified: false,
+        };
+      }
+
+      const updatedCarer = await Carer.findByIdAndUpdate(
+        req.params.id,
+        updateData,
+        { new: true }
+      );
+
+      if (!updatedCarer) {
+        return res.status(404).json({
+          message: "해당 요양보호사를 찾을 수 없습니다.",
+        });
+      }
+
+      res.json({
+        carer: updatedCarer,
+        message: "자격 정보가 업데이트되었습니다.",
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(400).json({
+        message: err.message || "자격 정보 업데이트 중 오류가 발생했습니다.",
+      });
+    }
+  }
+);
+
+// 기존 근무 경력 조회
+router.get("/careers/:id", async (req, res) => {
+  try {
+    const carer = await Carer.findById(req.params.id).select("mainCareers");
+
+    if (!carer) {
+      return res.status(404).json({
+        message: "해당 요양보호사를 찾을 수 없습니다.",
+      });
+    }
+
+    res.json(carer.mainCareers);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "서버 오류가 발생했습니다.",
+    });
+  }
+});
+
+// 근무 정보 조회
+router.get("/work-conditions/:id", async (req, res) => {
+  try {
+    const carer = await Carer.findById(req.params.id).select("workConditions");
+
+    if (!carer) {
+      return res.status(404).json({
+        message: "해당 요양보호사를 찾을 수 없습니다.",
+      });
+    }
+
+    res.json(carer.workConditions);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "서버 오류가 발생했습니다.",
+    });
+  }
+});
+
 module.exports = router;
