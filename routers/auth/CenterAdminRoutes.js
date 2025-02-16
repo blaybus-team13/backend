@@ -7,48 +7,94 @@ const bcrypt = require("bcrypt");
  * /auth/center_admin:
  *   post:
  *     summary: 센터 관리자 등록
+ *     tags: [CenterAdmin]
+ *     parameters:
+ *       - in: header
+ *         name: Content-Type
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: application/json
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - userid
+ *               - password
+ *               - name
+ *               - tel
+ *               - position
+ *               - address
+ *               - center
  *             properties:
  *               userid:
  *                 type: string
+ *                 description: 관리자 아이디
  *               password:
- *                type: string
+ *                 type: string
+ *                 description: 비밀번호
+ *                 format: password
  *               name:
- *                type: string
+ *                 type: string
+ *                 description: 관리자 이름
  *               tel:
- *                type: string
+ *                 type: string
+ *                 description: 전화번호
  *               position:
- *                type: string
+ *                 type: string
+ *                 description: 직책
+ *               address:
+ *                 type: string
+ *                 description: 주소
  *               profileImage:
- *                type: string
- *               hasVehicle:
- *                type: boolean
+ *                 type: string
+ *                 description: 프로필 이미지
  *               center:
  *                 type: object
+ *                 required:
+ *                   - name
+ *                   - tel
+ *                   - address
  *                 properties:
  *                   name:
  *                     type: string
+ *                     description: 센터 이름
  *                   tel:
  *                     type: string
+ *                     description: 센터 전화번호
  *                   address:
  *                     type: string
+ *                     description: 센터 주소
  *                   hasVehicle:
  *                     type: boolean
+ *                     description: 차량 운행 여부
  *                   centerGrade:
  *                     type: number
+ *                     description: 센터 등급
  *                   operationYears:
  *                     type: number
+ *                     description: 운영 연수
  *                   shortBio:
  *                     type: string
+ *                     description: 센터 소개
  *     responses:
  *       201:
- *         description: 생성됨
+ *         description: 센터 관리자 등록 성공
+ *       400:
+ *         description: 잘못된 요청
+ *       500:
+ *         description: 서버 오류
  */
+
 router.post("/", async (req, res) => {
   const {
     userid,
@@ -99,13 +145,69 @@ router.post("/", async (req, res) => {
 /**
  * @swagger
  * /auth/center_admin:
- *  get:
- *   summary: 센터 모든 관리자 조회
- *  responses:
- *   200:
- *    description
- *      성공
+ *   get:
+ *     summary: 센터 모든 관리자 조회
+ *     tags: [CenterAdmin]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token
+ *     responses:
+ *       200:
+ *         description: 센터 관리자 목록 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     description: 관리자 ID
+ *                   userid:
+ *                     type: string
+ *                     description: 관리자 아이디
+ *                   name:
+ *                     type: string
+ *                     description: 관리자 이름
+ *                   tel:
+ *                     type: string
+ *                     description: 전화번호
+ *                   position:
+ *                     type: string
+ *                     description: 직책
+ *                   address:
+ *                     type: string
+ *                     description: 주소
+ *                   profileImage:
+ *                     type: string
+ *                     description: 프로필 이미지 경로
+ *                   center:
+ *                     type: object
+ *                     description: 센터 정보
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                       tel:
+ *                         type: string
+ *                       address:
+ *                         type: string
+ *                       hasVehicle:
+ *                         type: boolean
+ *                       centerGrade:
+ *                         type: number
+ *                       operationYears:
+ *                         type: number
+ *                       shortBio:
+ *                         type: string
+ *       500:
+ *         description: 서버 오류
  */
+
 router.get("/", async (req, res) => {
   try {
     const centerAdmins = await CenterAdmin.find();
