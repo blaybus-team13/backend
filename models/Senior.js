@@ -8,7 +8,6 @@ const seniorSchema = new mongoose.Schema({
     age: { type: Number },
     gender: { type: String, enum: ["남", "여"], required: true },
     address: { type: [String], required: true },
-    tel: { type: String, required: true, unique: true },
   },
   careInfo: {
     weight: { type: Number, required: true },

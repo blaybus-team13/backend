@@ -8,12 +8,11 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const { createAuthRouter } = require("./routers");
-const seniorRoutes = require("./routers/seniorRoutes");
 
 const saveCenterData = require("./scripts/CenterData");
 
 mongoose
-  .connect("mongodb://root:admin@localhost:27018/test?authSource=admin")
+  .connect("mongodb://root:admin@localhost:27017/test?authSource=admin")
   .then(() => {
     console.log("MongoDB connected");
   });
@@ -43,18 +42,15 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ["./app.js", "./routers/*.js"], // API 라우트 파일 경로
+  apis: ["./app.js", "./routers/**/*.js"], // API 라우트 파일 경로
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/auth", createAuthRouter());
-app.use("/", seniorRoutes);
 
 // centerAdmin 라우터 추가 (여기)
-const carerRoutes = require("./routers/CarerRoutes");
-app.use("/api/carer", carerRoutes);
 
 app.get("/", (req, res) => {
   res.send("hello world");
