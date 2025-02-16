@@ -4,259 +4,193 @@ const Senior = require("../../models/Senior");
 
 const mongoose = require("mongoose");
 
+// create
 /**
  * @swagger
  * /auth/senior:
  *   post:
  *     summary: 새로운 Senior 생성
- *     tags: [Senior]
- *     parameters:
- *       - in: header
- *         name: Content-Type
- *         required: true
- *         schema:
- *           type: string
- *         description: application/json
- *       - in: header
- *         name: Authorization
- *         required: true
- *         schema:
- *           type: string
- *         description: Bearer token
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - name
- *               - tel
- *               - address
- *               - services
- *               - workingDays
- *               - workingHours
- *               - minSalary
- *               - info
  *             properties:
- *               name:
- *                 type: string
- *                 description: 이름
- *                 example: "신짱구"
- *               tel:
- *                 type: string
- *                 description: 전화번호
- *               address:
- *                 type: string
- *                 description: 주소
- *               profileImage:
- *                 type: string
- *                 description: 프로필 이미지
- *               services:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: 필요 서비스
- *               workingDays:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: 희망 근무 요일
- *               workingHours:
- *                 type: array
- *                 items:
- *                   type: number
- *                 description: 근무 시간
- *               minSalary:
- *                 type: number
- *                 description: 시급
- *               info:
+ *               basicInfo:
  *                 type: object
- *                 required:
- *                   - gender
- *                   - weight
- *                   - hasCohabitant
  *                 properties:
+ *                   seniorProfileImage:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   birthDate:
+ *                     type: string
+ *                     format: date
  *                   gender:
  *                     type: string
- *                     description: 성별
+ *                     enum: [남, 여]
+ *                   address:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   tel:
+ *                     type: string
+ *               careInfo:
+ *                 type: object
+ *                 properties:
  *                   weight:
  *                     type: number
- *                     description: 몸무게
  *                   hasCohabitant:
  *                     type: boolean
- *                     description: 동거인 여부
- *                     example: true
+ *                   familyInfo:
+ *                     type: object
+ *                     properties:
+ *                       status:
+ *                         type: string
+ *                       memberCount:
+ *                         type: number
+ *                   careGrade:
+ *                     type: string
+ *               schedule:
+ *                 type: object
+ *                 properties:
+ *                   workingSchedule:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         day:
+ *                           type: string
+ *                         hours:
+ *                           type: array
+ *                           items:
+ *                             type: number
+ *               care:
+ *                 type: object
+ *                 properties:
+ *                   medicalConditions:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   reqServices:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   specificRequirements:
+ *                     type: string
+ *               reqCarer:
+ *                 type: object
+ *                 properties:
+ *                   reqWorkingSchedule:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         day:
+ *                           type: string
+ *                         hours:
+ *                           type: array
+ *                           items:
+ *                             type: number
+ *                   expectedStartDate:
+ *                     type: string
+ *                     format: date
+ *                   desiredSalary:
+ *                     type: number
+ *               plus:
+ *                 type: object
+ *                 properties:
+ *                   managerTel:
+ *                     type: string
+ *                   managerEmail:
+ *                     type: string
  *     responses:
  *       201:
- *         description: Senior 생성 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "senior 정보 생성 성공"
- *                 data:
- *                   $ref: '#/components/schemas/Senior'
- *       500:
- *         description: 필수 정보 미입력 또는 서버 오류
+ *         description: 생성됨
+ *       400:
+ *         description: 필수 정보가 누락되었거나 잘못된 요청
  */
 router.post("/", async (req, res) => {
-  const {
-    name,
-    tel,
-    address,
-    services,
-    workingDays,
-    workingHours,
-    minSalary,
-    profileImage,
-    info,
-  } = req.body;
+  const { basicInfo, careInfo, schedule, care, reqCarer, plus } = req.body;
+
   if (
-    !name ||
-    !tel ||
-    !address ||
-    !profileImage ||
-    !services ||
-    !workingDays ||
-    !workingHours ||
-    !info ||
-    !minSalary
+    !basicInfo.name ||
+    !basicInfo.tel ||
+    !basicInfo.address ||
+    !basicInfo.birthDate ||
+    !basicInfo.gender ||
+    !careInfo.weight ||
+    careInfo.hasCohabitant === undefined ||
+    !careInfo.careGrade ||
+    !care.reqServices ||
+    !plus.managerTel ||
+    !plus.managerEmail
   ) {
-    return res.status(500).json({ message: "모든 필수 정보 미입력" });
+    return res.status(400).json({ message: "필수 정보 미입력" });
   }
-  const senior = new Senior(req.body);
+
+  const seniorData = {
+    basicInfo,
+    careInfo,
+    schedule,
+    care,
+    reqCarer,
+    plus,
+  };
+
+  const senior = new Senior(seniorData);
   const savedSenior = await senior.save();
   res.status(201).json({ message: "senior 정보 생성 성공", data: savedSenior });
 });
 
+//read
 /**
  * @swagger
  * /auth/senior/{id}:
- *   patch:
- *     summary: 특정 Senior 정보 수정
- *     tags: [Senior]
+ *   get:
+ *     summary: 특정 Senior 상세 정보 조회
+ *     description: Senior의 ID를 사용하여 정보를 조회
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: 조회할 Senior의 고유 ID
  *         schema:
  *           type: string
- *           format: uuid
- *         description: 수정할 Senior ID
- *       - in: header
- *         name: Authorization
- *         required: true
- *         schema:
- *           type: string
- *         description: Bearer token
- *       - in: header
- *         name: Content-Type
- *         required: true
- *         schema:
- *           type: string
- *         description: application/json
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 example: "신짱구"
- *               tel:
- *                 type: string
- *               address:
- *                 type: string
- *               profileImage:
- *                 type: string
- *               services:
- *                 type: array
- *                 items:
- *                   type: string
- *               workingDays:
- *                 type: array
- *                 items:
- *                   type: string
- *               workingHours:
- *                 type: array
- *                 items:
- *                   type: number
- *               minSalary:
- *                 type: number
- *               info:
- *                 type: object
- *                 properties:
- *                   gender:
- *                     type: string
- *                   weight:
- *                     type: number
- *                   hasCohabitant:
- *                     type: boolean
- *                     example: true
  *     responses:
  *       200:
- *         description: Senior 정보 수정 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "senior 정보 수정 성공"
- *                 data:
- *                   $ref: '#/components/schemas/Senior'
- *                 updatedFields:
- *                   type: array
- *                   items:
- *                     type: string
- *       500:
- *         description: 수정 실패
+ *         description: Senior 정보를 조회됨
+ *       400:
+ *         description: 유효하지 않은 ID
+ *       404:
+ *         description: Senior를 찾을 수 없음
  */
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(500).json({ message: "유효하지 않은 ID" });
+    return res.status(400).json({ message: "유효하지 않은 ID" });
   }
   const senior = await Senior.findById(id);
   if (!senior) {
-    return res.status(500).json({ message: "해당 senior를 찾을 수 없습니다" });
+    return res.status(404).json({ message: "해당 senior를 찾을 수 없음" });
   }
-  res.status(201).json({ message: "senior 정보 조회 성공", data: senior });
+  res.status(200).json({ message: "senior 정보 조회 성공", data: senior });
 });
 
+// update
 /**
  * @swagger
  * /auth/senior/{id}:
  *   patch:
  *     summary: 특정 Senior 정보 수정
- *     tags: [Senior]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: 수정할 Senior의 고유 ID
  *         schema:
  *           type: string
- *           format: uuid
- *         description: 수정할 Senior ID
- *       - in: header
- *         name: Authorization
- *         required: true
- *         schema:
- *           type: string
- *         description: Bearer token
- *       - in: header
- *         name: Content-Type
- *         required: true
- *         schema:
- *           type: string
- *         description: application/json
  *     requestBody:
  *       required: true
  *       content:
@@ -264,99 +198,71 @@ router.get("/:id", async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               name:
- *                 type: string
- *                 example: "홍길동"
- *               tel:
- *                 type: string
- *               address:
- *                 type: string
- *               profileImage:
- *                 type: string
- *               services:
- *                 type: array
- *                 items:
- *                   type: string
- *               workingDays:
- *                 type: array
- *                 items:
- *                   type: string
- *               workingHours:
- *                 type: array
- *                 items:
- *                   type: number
- *               minSalary:
- *                 type: number
- *                 example: 12000
- *               info:
+ *               basicInfo:
  *                 type: object
- *                 properties:
- *                   gender:
- *                     type: string
- *                   weight:
- *                     type: number
- *                   hasCohabitant:
- *                     type: boolean
- *                     example: true
+ *               careInfo:
+ *                 type: object
+ *               schedule:
+ *                 type: object
+ *               care:
+ *                 type: object
+ *               reqCarer:
+ *                 type: object
+ *               plus:
+ *                 type: object
  *     responses:
  *       200:
  *         description: Senior 정보 수정 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "senior 정보 수정 성공"
- *                 data:
- *                   $ref: '#/components/schemas/Senior'
- *                 updatedFields:
- *                   type: array
- *                   items:
- *                     type: string
- *       500:
- *         description: 수정 실패
+ *       400:
+ *         description: 유효하지 않은 ID 또는 잘못된 요청
+ *       404:
+ *         description: Senior를 찾을 수 없음
  */
-
 router.patch("/:id", async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(500).json({ message: "유효하지 않은 ID" });
+    return res.status(400).json({ message: "유효하지 않은 ID" });
   }
   const updateData = req.body;
 
-  // 혹시 필요할까봐 데이터 검증 작성
   const allowedUpdates = [
-    "name",
-    "tel",
-    "address",
-    "profileImage",
-    "services",
-    "workingDays",
-    "workingHours",
-    "minSalary",
-    "info",
+    "basicInfo",
+    "careInfo",
+    "schedule",
+    "care",
+    "reqCarer",
+    "plus",
   ];
   const isValidOperation = Object.keys(updateData).every((field) =>
     allowedUpdates.includes(field)
   );
   if (!isValidOperation) {
-    return res.status(500).json({ message: "잘못된 업데이트가 포함됨" });
+    return res.status(400).json({ message: "잘못된 업데이트가 포함됨" });
   }
 
-  const updatedSenior = await Senior.findByIdAndUpdate(id, updateData, {
-    new: true,
-    runValidators: true,
-  });
-  if (!updatedSenior) {
-    return res.status(500).json({ message: "해당 senior를 찾을 수 없음" });
+  try {
+    const senior = await Senior.findById(id);
+    if (!senior) {
+      return res.status(404).json({ message: "해당 senior를 찾을 수 없음" });
+    }
+
+    Object.keys(updateData).forEach((key) => {
+      if (typeof updateData[key] === "object" && updateData[key] !== null) {
+        senior[key] = { ...senior[key], ...updateData[key] };
+      } else {
+        senior[key] = updateData[key];
+      }
+    });
+
+    const updatedSenior = await senior.save();
+    res.status(200).json({
+      message: "senior 정보 수정 성공",
+      data: updatedSenior,
+      updatedFields: Object.keys(updateData),
+    });
+  } catch (error) {
+    res.status(400).json({ message: "업데이트 실패", error: error.message });
   }
-  res.status(201).json({
-    message: "senior 정보 수정 성공",
-    data: updatedSenior,
-    updatedFields: Object.keys(updateData),
-  });
 });
 
 // delete
@@ -365,7 +271,6 @@ router.patch("/:id", async (req, res) => {
  * /auth/senior/{id}:
  *   delete:
  *     summary: 특정 Senior 삭제
- *     description: Senior의 ID를 사용하여 데이터를 삭제함
  *     parameters:
  *       - in: path
  *         name: id
@@ -376,18 +281,20 @@ router.patch("/:id", async (req, res) => {
  *     responses:
  *       200:
  *         description: Senior 삭제 성공
- *       500:
- *         description: 서버 오류 또는 잘못된 요청, senior을 찾을 수 없음
+ *       400:
+ *         description: 유효하지 않은 ID
+ *       404:
+ *         description: Senior를 찾을 수 없음
  */
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(500).json({ message: "유효하지 않은 ID" });
+    return res.status(400).json({ message: "유효하지 않은 ID" });
   }
 
   const deletedSenior = await Senior.findByIdAndDelete(id);
   if (!deletedSenior) {
-    return res.status(500).json({ message: "해당 senior를 찾을 수 없음" });
+    return res.status(404).json({ message: "해당 senior를 찾을 수 없음" });
   }
   res.status(200).json({
     message: "senior 정보 삭제됨",
