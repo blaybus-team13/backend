@@ -6,6 +6,30 @@ const addressSchema = new mongoose.Schema({
   subSubCity: { type: String, required: true }, //동
 });
 
+//주요 경력
+const MainCareerSchema = new mongoose.Schema({
+  institutionName: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 50,
+  },
+  roleDescription: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 300,
+  },
+  periodStart: {
+    type: Date,
+    required: true,
+  },
+  periodEnd: {
+    type: Date,
+    required: true,
+  },
+});
+
 const carerSchema = new mongoose.Schema({
   userid: { type: String, required: true, unique: true },
   password: { type: String, required: true },

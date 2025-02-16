@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const Carer = require("../models/Carer");
+const Carer = require("../../models/Carer");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -29,6 +29,132 @@ const uploadFields = [
   { name: "profileImage", maxCount: 1 },
   { name: "images", maxCount: 5 },
 ];
+
+/**
+ * @swagger
+ * /auth/carer/update-main-careers/{id}:
+ *   patch:
+ *     summary: 요양보호사 주요 경력 업데이트
+ *     tags: [Carer]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 요양보호사 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               mainCareers:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     institutionName:
+ *                       type: string
+ *                       description: 기관명
+ *                     roleDescription:
+ *                       type: string
+ *                       description: 한 일 소개
+ *                     periodStart:
+ *                       type: string
+ *                       format: date
+ *                       description: 경력 시작일
+ *                     periodEnd:
+ *                       type: string
+ *                       format: date
+ *                       description: 경력 종료일
+ *     responses:
+ *       200:
+ *         description: 주요 경력 업데이트 성공
+ *       400:
+ *         description: 잘못된 입력 데이터
+ *       404:
+ *         description: 해당 보호사를 찾을 수 없음
+ *       500:
+ *         description: 서버 오류
+ */
+router.patch("/update-main-careers/:id", async (req, res) => {
+  try {
+    const { mainCareers } = req.body;
+
+    if (!Array.isArray(mainCareers)) {
+      return res.status(400).json({
+        message: "주요 경력을 입력해야 합니다.",
+      });
+    }
+
+    // 각 경력 항목 검증
+    const validatedCareers = mainCareers.map((career) => {
+      if (
+        !career.institutionName ||
+        !career.roleDescription ||
+        !career.periodStart
+      ) {
+        throw new Error(
+          "기관명, 한 일 소개, 경력 시작일을 필수로 입력해주세요."
+        );
+      }
+
+      // 날짜 형식 검증 및 변환
+      const periodStart = new Date(career.periodStart);
+      const periodEnd = career.periodEnd ? new Date(career.periodEnd) : null;
+
+      // 날짜 유효성 검사
+      if (isNaN(periodStart.getTime())) {
+        throw new Error("잘못된 날짜 형식입니다.");
+      }
+
+      if (periodEnd && isNaN(periodEnd.getTime())) {
+        throw new Error("잘못된 경력 종료일 형식입니다.");
+      }
+
+      // 시작일이 종료일보다 이후일 수 없음
+      if (periodEnd && periodStart > periodEnd) {
+        throw new Error("경력 시작일은 종료일보다 이전이어야 합니다.");
+      }
+
+      return {
+        institutionName: career.institutionName.trim(),
+        roleDescription: career.roleDescription.trim(),
+        periodStart,
+        periodEnd,
+      };
+    });
+
+    // 추가 경력을 입력하면 데이터베이스 업데이트하기
+    const updatedCarer = await Carer.findByIdAndUpdate(
+      req.params.id,
+      { $set: { mainCareers: validatedCareers } },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedCarer) {
+      return res.status(404).json({
+        message: "해당 보호사를 찾을 수 없습니다.",
+      });
+    }
+
+    res.json({
+      carer: updatedCarer,
+      message: "주요 경력이 성공적으로 업데이트되었습니다.",
+      canSkip: true,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({
+      message: err.message || "주요 경력 업데이트 중 오류가 발생했습니다.",
+    });
+  }
+});
 
 /**
  * @swagger
@@ -112,22 +238,22 @@ const uploadFields = [
  *                 description: 치매 교육 이수 여부
  *               addressCity:
  *                 type: string
- *                 description: 거주지 시 (예: 서울시)
+ *                 description: 거주지 시 (서울시)
  *               addressSubCity:
  *                 type: string
- *                 description: 거주지 구 (예: 강남구)
+ *                 description: 거주지 구 (강남구)
  *               addressSubSubCity:
  *                 type: string
- *                 description: 거주지 동 (예: 역삼동)
+ *                 description: 거주지 동 (역삼동)
  *               workingAreaCity:
  *                 type: string
- *                 description: 희망 근무지 시 (예: 서울시)
+ *                 description: 희망 근무지 시 (서울시)
  *               workingAreaSubCity:
  *                 type: string
- *                 description: 희망 근무지 구 (예: 강남구)
+ *                 description: 희망 근무지 구 (강남구)
  *               workingAreaSubSubCity:
  *                 type: string
- *                 description: 희망 근무지 동 (예: 역삼동)
+ *                 description: 희망 근무지 동 (역삼동)
  *               profileImage:
  *                 type: file
  *                 description: 프로필 이미지
@@ -179,6 +305,7 @@ router.post("/register", upload.fields(uploadFields), async (req, res) => {
       },
       hasVehicle: hasVehicle === "true",
       hasDementiaTraining: hasDementiaTraining === "true",
+      mainCareers: [],
       address: {
         city: addressCity,
         subCity: addressSubCity,
