@@ -8,61 +8,68 @@ const seniorSchema = new Schema(
       required: true,
       unique: true,
     },
-    name: {
-      type: String,
-      required: true,
+    basicInfo: {
+      name: {
+        type: String,
+        required: true,
+      },
+      birthDate: {
+        type: Date,
+        required: true,
+      },
+      gender: {
+        type: String,
+        enum: ["남성", "여성성"],
+        required: true,
+      },
     },
-    birthDate: {
-      type: Date,
-      required: true,
+    careInfo: {
+      careGrade: {
+        type: String,
+        enum: [
+          "등급없음",
+          "1등급",
+          "2등급",
+          "3등급",
+          "4등급",
+          "5등급",
+          "인적지원 등급",
+        ],
+        required: true,
+      },
+      weight: {
+        type: Number,
+        required: true,
+      },
+      diseaseInfo: {
+        type: String,
+        required: false,
+      },
+      address: {
+        type: String,
+        required: true,
+      },
     },
-    gender: {
-      type: String,
-      enum: ["남성", "여성성"],
-      required: true,
+    schedule: {
+      careDays: {
+        type: [
+          {
+            type: String,
+            enum: ["월", "화", "수", "목", "금", "토", "일"],
+          },
+        ],
+        required: true,
+      },
+      careStartTime: {
+        type: Date,
+        required: true,
+      },
+      careEndTime: {
+        type: Date,
+        required: true,
+      },
     },
-    careGrade: {
-      type: String,
-      enum: [
-        "등급없음",
-        "1등급",
-        "2등급",
-        "3등급",
-        "4등급",
-        "5등급",
-        "인적지원 등급",
-      ],
-      required: true,
-    },
-    weight: {
-      type: Number,
-      required: true,
-    },
-    diseaseInfo: {
-      type: String,
-      required: false,
-    },
-    address: {
-      type: String,
-      required: true,
-    },
-    careDays: {
-      type: [
-        {
-          type: String,
-          enum: ["월", "화", "수", "목", "금", "토", "일"],
-        },
-      ],
-      required: true,
-    },
-    careStartTime: {
-      type: Date,
-      required: true,
-    },
-    careEndTime: {
-      type: Date,
-      required: true,
-    },
+
     additionalInfo: {
       type: [
         {
@@ -78,31 +85,61 @@ const seniorSchema = new Schema(
       required: false,
     },
     mealAssistance: {
-      type: [{
+      type: [
+        {
           type: String,
-          enum: ["스스로 식사 가능", "식사 차려드리기" ,"죽, 반찬 등 조리 필요", "경관식 보조"]
-        }],
+          enum: [
+            "스스로 식사 가능",
+            "식사 차려드리기",
+            "죽, 반찬 등 조리 필요",
+            "경관식 보조",
+          ],
+        },
+      ],
       required: true,
     },
     toiletAssistance: {
-      type: [{
+      type: [
+        {
           type: String,
-          enum: ["스스로 배변 가능", "가끔 대소변 실수 시 도움", "기저귀 케어 필요", "유치도뇨/방광루/장루 관리"]
-        }],
+          enum: [
+            "스스로 배변 가능",
+            "가끔 대소변 실수 시 도움",
+            "기저귀 케어 필요",
+            "유치도뇨/방광루/장루 관리",
+          ],
+        },
+      ],
       required: true,
     },
     mobilityAssistance: {
-      type: [{
+      type: [
+        {
           type: String,
-          enum: ["스스로 거동 가능", "이동시 부축 도움", "휠체어 이동 보조", "거동 불가"]
-        }],
+          enum: [
+            "스스로 거동 가능",
+            "이동시 부축 도움",
+            "휠체어 이동 보조",
+            "거동 불가",
+          ],
+        },
+      ],
       required: true,
     },
     dailyLifeService: {
-      type: [{
+      type: [
+        {
           type: String,
-          enum: ["청소, 빨래 보조", "목욕 보조", "병원 동행행", "산책, 간단한 운동", "말벗 등 정서지원", "인지자극 활동"]
-        }],
+          enum: [
+            "청소, 빨래 보조",
+            "목욕 보조",
+            "병원 동행행",
+            "산책, 간단한 운동",
+            "말벗 등 정서지원",
+            "인지자극 활동",
+          ],
+        },
+      ],
       required: true,
     },
     additionalService: {
