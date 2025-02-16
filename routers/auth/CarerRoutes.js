@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const Carer = require("../models/Carer");
+const Carer = require("../../models/Carer");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -112,22 +112,34 @@ const uploadFields = [
  *                 description: 치매 교육 이수 여부
  *               addressCity:
  *                 type: string
- *                 description: 거주지 시 (예: 서울시)
+ *                 description: |
+ *                   거주지 시 (예: 서울시)
+ *                   요양보호사의 거주하는 시를 입력합니다.
  *               addressSubCity:
  *                 type: string
- *                 description: 거주지 구 (예: 강남구)
+ *                 description: |
+ *                   거주지 구 (예: 강남구)
+ *                   요양보호사의 거주하는 구를 입력합니다.
  *               addressSubSubCity:
  *                 type: string
- *                 description: 거주지 동 (예: 역삼동)
+ *                 description: |
+ *                   거주지 동 (예: 역삼동)
+ *                   요양보호사의 거주하는 동을 입력합니다.
  *               workingAreaCity:
  *                 type: string
- *                 description: 희망 근무지 시 (예: 서울시)
+ *                 description: |
+ *                   희망 근무지 시 (예: 서울시)
+ *                   요양보호사가 희망하는 근무 지역의 시를 입력합니다.
  *               workingAreaSubCity:
  *                 type: string
- *                 description: 희망 근무지 구 (예: 강남구)
+ *                 description: |
+ *                   희망 근무지 구 (예: 강남구)
+ *                   요양보호사가 희망하는 근무 지역의 구를 입력합니다.
  *               workingAreaSubSubCity:
  *                 type: string
- *                 description: 희망 근무지 동 (예: 역삼동)
+ *                 description: |
+ *                   희망 근무지 동 (예: 역삼동)
+ *                   요양보호사가 희망하는 근무 지역의 동을 입력합니다.
  *               profileImage:
  *                 type: file
  *                 description: 프로필 이미지

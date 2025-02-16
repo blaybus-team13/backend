@@ -19,7 +19,7 @@ const seniorSchema = new Schema(
       },
       gender: {
         type: String,
-        enum: ["남성", "여성성"],
+        enum: ["남성", "여성"],
         required: true,
       },
     },
@@ -49,25 +49,54 @@ const seniorSchema = new Schema(
         type: String,
         required: true,
       },
-    },
-    schedule: {
-      careDays: {
+      dementia: {
         type: [
           {
             type: String,
-            enum: ["월", "화", "수", "목", "금", "토", "일"],
+            enum: [
+              "정상(증상없음)",
+              "집 밖을 배회",
+              "했던 말을 반복하는 등의 단기기억 장애",
+              "가족을 알아보지 못함",
+              "길을 잃거나 자주 가던 곳을 헤맴",
+              "어린아이 같은 행동",
+              "사람을 의심하는 증상",
+              "때리거나 욕설 등의 공격적인 행동",
+            ],
           },
+        ],
+        required: false,
+      },
+      livingArrangement: {
+        type: String,
+        enum: [
+          "독거",
+          "배우자와 동거, 돌봄 시간 중에 집에 있음",
+          "배우자와 동거, 돌봄 시간 중에 자리 비움",
+          "다른 가족과 동거, 돌봄 시간 중에 집에 있음",
+          "다른 가족과 동거, 돌봄 시간 중에 자리 비움",
         ],
         required: true,
       },
-      careStartTime: {
-        type: Date,
-        required: true,
-      },
-      careEndTime: {
-        type: Date,
-        required: true,
-      },
+    },
+    schedule: {
+      careDays: [
+        {
+          day: {
+            type: String,
+            enum: ["월", "화", "수", "목", "금", "토", "일"],
+            required: true,
+          },
+          careStartTime: {
+            type: Date,
+            required: true,
+          },
+          careEndTime: {
+            type: Date,
+            required: true,
+          },
+        },
+      ],
     },
 
     additionalInfo: {
@@ -131,10 +160,12 @@ const seniorSchema = new Schema(
         {
           type: String,
           enum: [
-            "청소, 빨래 보조",
+            "청소",
+            "빨래 보조",
             "목욕 보조",
-            "병원 동행행",
-            "산책, 간단한 운동",
+            "병원 동행",
+            "산책",
+            "간단한 운동",
             "말벗 등 정서지원",
             "인지자극 활동",
           ],
