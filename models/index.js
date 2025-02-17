@@ -5,6 +5,7 @@ const JobCondition = require("./JobCondition");
 const CenterAdmin = require("./CenterAdmin");
 const WorkExperience = require("./WorkExperience");
 const Center = require("./Center");
+const Chat = require("./Chat");
 
 module.exports = {
   Carer,
@@ -14,4 +15,5 @@ module.exports = {
   CenterAdmin,
   WorkExperience,
   Center,
+  Chat,
 };
