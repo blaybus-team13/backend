@@ -7,6 +7,10 @@ const logger = require("morgan");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+const socketIo = require("socket.io");
+const setupChatSocket = require("./sockets/ChatSocket");
+const ChatRouter = require("./routers/auth/ChatRoutes");
+
 const { createAuthRouter } = require("./routers");
 
 const saveCenterData = require("./scripts/CenterData");
@@ -18,6 +22,7 @@ mongoose
   });
 
 const app = express();
+app.use(cors());
 
 app.use(logger("dev"));
 app.use(express.json());
@@ -49,6 +54,7 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/auth", createAuthRouter());
+app.use("/chat", ChatRouter);
 
 // centerAdmin 라우터 추가 (여기)
 
@@ -81,8 +87,11 @@ app.use((err, req, res, next) => {
 
 // 포트 설정
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`서버가 ${port} 포트에서 실행중입니다.`);
 });
+
+const io = socketIo(server);
+setupChatSocket(io);
 
 module.exports = app;
