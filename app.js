@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
@@ -12,7 +13,7 @@ const { createAuthRouter } = require("./routers");
 const saveCenterData = require("./scripts/CenterData");
 
 mongoose
-  .connect("mongodb://root:admin@localhost:27017/test?authSource=admin")
+  .connect("mongodb://root:admin@localhost:27018/test?authSource=admin")
   .then(() => {
     console.log("MongoDB connected");
   });

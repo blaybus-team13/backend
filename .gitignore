@@ -1,1 +1,20 @@
 node_modules
+
+# 환경 변수 파일
+.env
+
+# Node.js 의존성 폴더
+node_modules/
+
+# 로그 파일
+*.log
+
+# MacOS 시스템 파일
+.DS_Store
+
+# Windows 시스템 파일
+Thumbs.db
+
+# 에디터 설정 폴더
+.vscode/
+.idea/

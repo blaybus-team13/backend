@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const Carer = require("../../models/Carer");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -890,6 +892,46 @@ router.get("/work-conditions/:id", async (req, res) => {
     }
 
     res.json(carer.workConditions);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "서버 오류가 발생했습니다.",
+    });
+  }
+});
+
+router.post("/login", async (req, res) => {
+  try {
+    const { userid, password } = req.body;
+
+    const token = jwt.sign(
+      { id: carer._id, userid: carer.userid },
+      process.env.JWT_SECRET,
+      { expiresIn: "12h" }
+    );
+
+    const carer = await Carer.findOne({ userid });
+    if (!carer) {
+      return res.status(401).json({
+        message: "아이디 또는 비밀번호가 일치하지 않습니다.",
+      });
+    }
+
+    const isValid = await bcrypt.compare(password, carer.password);
+    if (!isValid) {
+      return res.status(401).json({
+        message: "아이디 또는 비밀번호가 일치하지 않습니다.",
+      });
+    }
+
+    res.json({
+      message: "로그인 성공했습니다.",
+      token,
+      carer: {
+        id: carer._id,
+        name: carer.name,
+      },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({

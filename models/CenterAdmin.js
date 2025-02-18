@@ -1,16 +1,19 @@
 const mongoose = require("mongoose");
 
+// 주소 스키마 정의
+const addressSchema = new mongoose.Schema({
+  city: { type: String, required: true }, // 시
+  subCity: { type: String, required: true }, // 구
+  subSubCity: { type: String, required: true }, // 동
+});
+
 const centerAdminSchema = new mongoose.Schema({
   userid: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   name: { type: String, required: true },
   tel: { type: String, required: true, unique: true },
   position: { type: String, required: true },
-  centerAddress: {
-    centerCity: { type: String, required: true }, // 센터주소 시
-    centerDistrict: { type: String, required: true }, // 센터주소 구
-    centerNeighborhood: { type: String, required: true }, // 센터주소 동
-  },
+  address: { type: addressSchema, required: true },
   profileImage: { type: String, required: false },
   center: {
     type: mongoose.Schema.Types.ObjectId,
@@ -19,4 +22,10 @@ const centerAdminSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("centerAdmin", centerAdminSchema);
+centerAdminSchema.index({
+  "address.city": 1,
+  "address.subCity": 1,
+  "address.subSubCity": 1,
+});
+
+module.exports = mongoose.model("CenterAdmin", centerAdminSchema);

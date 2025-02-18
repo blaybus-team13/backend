@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const CenterAdmin = require("../../models/CenterAdmin");
+const Center = require("../../models/Center");
 
 /**
  * @swagger
@@ -54,18 +55,18 @@ const CenterAdmin = require("../../models/CenterAdmin");
  *               position:
  *                 type: string
  *                 description: 직책
- *               centerAddress:
+ *               address:
  *                 type: object
  *                 properties:
- *                   centerCity:
+ *                   city:
  *                     type: string
- *                     description: 센터주소 시
- *                   centerDistrict:
+ *                     description: 시
+ *                   subCity:
  *                     type: string
- *                     description: 센터주소 구
- *                   centerNeighborhood:
+ *                     description: 구
+ *                   subSubCity:
  *                     type: string
- *                     description: 센터주소 동
+ *                     description: 동
  *                 description: 프로필 이미지
  *               center:
  *                 type: object
@@ -80,18 +81,18 @@ const CenterAdmin = require("../../models/CenterAdmin");
  *                   tel:
  *                     type: string
  *                     description: 센터 전화번호
- *                  centerAddress:
+ *                  address:
  *                    type: object
  *                    properties:
- *                   centerCity:
- *                     type: string
- *                     description: 센터주소 시
- *                   centerDistrict:
- *                     type: string
- *                     description: 센터주소 구
- *                   centerNeighborhood:
- *                     type: string
- *                     description: 센터주소 동
+ *                      city:
+ *                        type: string
+ *                        description: 시
+ *                      subCity:
+ *                        type: string
+ *                        description: 구
+ *                      subSubCity:
+ *                        type: string
+ *                        description: 동
  *                   hasVehicle:
  *                     type: boolean
  *                     description: 차량 운행 여부
@@ -122,7 +123,7 @@ router.post("/", async (req, res) => {
       tel,
       position,
       profileImage,
-      centerAddress,
+      address,
       hasVehicle,
       center,
     } = req.body;
@@ -142,15 +143,15 @@ router.post("/", async (req, res) => {
 
     let centerInfo = await Center.findOne({
       name: center.name,
-      "centerAddress.centerCity": centerAddress.centerCity,
-      "centerAddress.centerDistrict": centerAddress.centerDistrict,
-      "centerAddress.centerNeighborhood": centerAddress.centerNeighborhood,
+      "address.city": address.city,
+      "address.subCity": address.subCity,
+      "address.subSubCity": address.subSubCity,
     });
 
     if (!centerInfo) {
       centerInfo = new Center({
         ...center,
-        centerAddress,
+        address,
       });
       await centerInfo.save();
     }
@@ -163,6 +164,7 @@ router.post("/", async (req, res) => {
       position,
       profileImage,
       hasVehicle,
+      address,
       center: centerInfo._id,
     });
     await centerAdmin.save();
@@ -211,18 +213,18 @@ router.post("/", async (req, res) => {
  *                   position:
  *                     type: string
  *                     description: 직책
- *                   centerAddress:
- *                 type: object
- *                 properties:
- *                   centerCity:
- *                     type: string
- *                     description: 센터주소 시
- *                   centerDistrict:
- *                     type: string
- *                     description: 센터주소 구
- *                   centerNeighborhood:
- *                     type: string
- *                     description: 센터주소 동
+ *                   address:
+ *                     type: object
+ *                     properties:
+ *                       city:
+ *                         type: string
+ *                         description: 시
+ *                       subCity:
+ *                         type: string
+ *                         description: 구
+ *                       subSubCity:
+ *                         type: string
+ *                         description: 동
  *                   profileImage:
  *                     type: string
  *                     description: 프로필 이미지 경로
@@ -235,7 +237,7 @@ router.post("/", async (req, res) => {
  *                       tel:
  *                         type: string
  *                       address:
- *                         type: string
+ *                         type: object
  *                       hasVehicle:
  *                         type: boolean
  *                       centerGrade:
@@ -282,7 +284,7 @@ router.get("/:id", async (req, res) => {
 // 센터 관리자 정보 수정
 router.put("/:id", async (req, res) => {
   try {
-    const { name, tel, position, centerAddress, profileImage } = req.body;
+    const { name, tel, position, address, profileImage } = req.body;
 
     const updatedAdmin = await CenterAdmin.findByIdAndUpdate(
       req.params.id,
@@ -290,7 +292,7 @@ router.put("/:id", async (req, res) => {
         name,
         tel,
         position,
-        centerAddress,
+        address,
         profileImage,
         updatedAt: Date.now(),
       },
@@ -315,16 +317,29 @@ router.put("/:id", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
+    console.log("JWT_SECRET:", process.env.JWT_SECRET); // 키 존재 확인용
+
     const { userid, password } = req.body;
+
+    if (!userid || !password) {
+      console.log("아이디 또는 비밀번호 누락");
+      return res.status(400).json({
+        message: "아이디와 비밀번호를 모두 입력해주세요.",
+      });
+    }
 
     const admin = await CenterAdmin.findOne({ userid });
     if (!admin) {
+      console.log(`사용자 ${userid} 찾을 수 없음`);
       return res.status(401).json({
         message: "아이디 또는 비밀번호가 일치하지 않습니다.",
       });
     }
 
+    console.log("비밀번호 검증 시작");
     const isValidPassword = await bcrypt.compare(password, admin.password);
+    console.log("비밀번호 검증 결과:", isValidPassword);
+
     if (!isValidPassword) {
       return res.status(401).json({
         message: "아이디 또는 비밀번호가 일치하지 않습니다.",
@@ -347,28 +362,10 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (e) {
+    console.error("로그인 중 오류 발생:", e);
     res.status(500).json({
       message: "서버 오류가 발생했습니다.",
-    });
-  }
-});
-
-router.delete("/:id", async (req, res) => {
-  try {
-    const deletedAdmin = await CenterAdmin.findByIdAndDelete(req.params.id);
-
-    if (!deletedAdmin) {
-      return res.status(404).json({
-        message: "해당 관리자를 찾을 수 없습니다.",
-      });
-    }
-
-    res.status(200).json({
-      message: "관리자 계정이 삭제되었습니다.",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "서버 오류가 발생했습니다.",
+      error: e.toString(),
     });
   }
 });
