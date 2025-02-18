@@ -45,7 +45,7 @@ function setupChatSocket(server) {
         messageId: Date.now().toString(),
         senderId,
         content,
-        type: type || "채팅",
+        type: type || "chat",
         isRead: false,
         createdAt: new Date(),
       };
@@ -82,7 +82,7 @@ function setupChatSocket(server) {
 
       chat.proposal = {
         proId,
-        proStatus: "대기",
+        proStatus: "pending",
         proCreatedAt: new Date(),
       };
 
@@ -111,7 +111,7 @@ function setupChatSocket(server) {
         return;
       }
 
-      chat.status = "종료";
+      chat.status = "closed";
       await chat.save();
       io.to(chatId).emit("chatEnded", { chatId });
     });

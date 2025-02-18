@@ -11,14 +11,16 @@ router.post("/chatStart", (req, res) => {
     centerId,
     seniorId,
     initiator,
-    status: "진행",
+    status: "active",
     proposal: {
       proId: Date.now().toString(),
     },
   });
   newChat
     .save()
-    .then((chat) => res.status(201).json(chat))
+    .then((chat) =>
+      res.status(201).json({ message: "채팅방을 성공적으로 생성함" })
+    )
     .catch((err) => res.status(500).json({ message: err.message }));
 });
 
@@ -26,12 +28,14 @@ router.post("/chatStart", (req, res) => {
 // 진행 중 & 종료된 대화 구분
 router.get("/list/:status", (req, res) => {
   const { status } = req.params;
-  if (status !== "진행" && status !== "종료") {
-    return res.status(400).json({ message: "잘못된 상태값임" });
+  if (status !== "active" && status !== "closed") {
+    return res.status(400).json({ message: "잘못된 상태값" });
   }
 
   Chat.find({ status })
-    .then((chats) => res.json(chats))
+    .then((chats) =>
+      res.json({ message: "채팅 목록을 성공적으로 조회함", chats })
+    )
     .catch((err) => res.status(500).json({ message: err.message }));
 });
 
@@ -41,7 +45,7 @@ router.get("/:chatId", (req, res) => {
       if (!chat) {
         return res.status(404).json({ message: "채팅방을 찾을 수 없음" });
       }
-      res.json(chat);
+      res.json({ message: "채팅방을 성공적으로 조회함", chat });
     })
     .catch((err) => res.status(500).json({ message: err.message }));
 });
@@ -49,8 +53,8 @@ router.get("/:chatId", (req, res) => {
 // update (진행 -> 종료)
 router.patch("/:chatId/status", (req, res) => {
   const { status } = req.body;
-  if (status !== "종료") {
-    return res.status(400).json({ message: "잘못된 상태값입니다." });
+  if (status !== "closed") {
+    return res.status(400).json({ message: "잘못된 상태값" });
   }
 
   Chat.findOneAndUpdate(
@@ -62,7 +66,7 @@ router.patch("/:chatId/status", (req, res) => {
       if (!chat) {
         return res.status(404).json({ message: "채팅방을 찾을 수 없음" });
       }
-      res.json(chat);
+      res.json({ message: "채팅방 상태를 성공적으로 업데이트함" });
     })
     .catch((err) => res.status(500).json({ message: err.message }));
 });
@@ -74,7 +78,8 @@ router.patch("/:chatId/proposal", (req, res) => {
     { chatId: req.params.chatId },
     {
       "proposal.proStatus": proStatus,
-      "proposal.proRespondedAt": proStatus !== "대기" ? new Date() : undefined,
+      "proposal.proRespondedAt":
+        proStatus !== "pending" ? new Date() : undefined,
     },
     { new: true }
   )
@@ -82,12 +87,12 @@ router.patch("/:chatId/proposal", (req, res) => {
       if (!chat) {
         return res.status(404).json({ message: "채팅방을 찾을 수 없음" });
       }
-      res.json(chat);
+      res.json({ message: "제안 상태가 성공적으로 업데이트됨" });
     })
     .catch((err) => res.status(500).json({ message: err.message }));
 });
 
-// 메시지지
+// 메시지
 router.post("/:chatId/message", async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -110,7 +115,7 @@ router.post("/:chatId/message", async (req, res) => {
     chat.messages.push(newMessage);
     await chat.save();
 
-    res.status(201).json(newMessage);
+    res.status(201).json({ message: "메시지가 성공적으로 추가됨" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
